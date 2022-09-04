@@ -1,4 +1,4 @@
-import { connection } from "../databases/postgres.js";
+import { connection } from "../databases/postgres";
 
 export interface Company {
   id: number;

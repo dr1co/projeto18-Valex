@@ -1,5 +1,5 @@
-import { connection } from "../databases/postgres.js";
-import { mapObjectToUpdateQuery } from "./utils/sqlUtils.js";
+import { connection } from "../databases/postgres";
+import { mapObjectToUpdateQuery } from "./utils/sqlUtils";
 
 export type TransactionTypes =
   | "groceries"
@@ -15,9 +15,9 @@ export interface Card {
   cardholderName: string;
   securityCode: string;
   expirationDate: string;
-  password?: string;
+  password?: string | null;
   isVirtual: boolean;
-  originalCardId?: number;
+  originalCardId?: number | null;
   isBlocked: boolean;
   type: TransactionTypes;
 }
