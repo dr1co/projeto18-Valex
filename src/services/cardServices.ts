@@ -1,9 +1,8 @@
 import { faker } from '@faker-js/faker';
-import Cryptr from 'cryptr';
-const cryptr = new Cryptr('secretkey');
 
 import { Employee } from '../repositories/employeeRepository';
 import * as cardRepository from '../repositories/cardRepository';
+import { encryptSecCode } from './encryptServices';
 
 export async function generateCardData(employee: Employee, type: cardRepository.TransactionTypes) {
     try {
@@ -15,7 +14,7 @@ export async function generateCardData(employee: Employee, type: cardRepository.
 
         const cardName = generateCardName(employee.fullName);
         const cardNumber = faker.random.numeric(16);
-        const secCode = cryptr.encrypt(faker.random.numeric(3));
+        const secCode = encryptSecCode(faker.random.numeric(3).toString());
         const expDate = generateExpDate();
 
         const newCard = {
@@ -30,8 +29,6 @@ export async function generateCardData(employee: Employee, type: cardRepository.
             isBlocked: true,
             type,
         }
-
-        await cardRepository.insert(newCard);
 
         return newCard;
     } catch (err) {
