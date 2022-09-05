@@ -1,26 +1,21 @@
 import { Request, Response } from "express";
 
 import * as cardRepository from '../repositories/cardRepository';
-import * as paymentRepository from '../repositories/paymentRepository';
-import * as rechargeRepository from '../repositories/rechargeRepository';
-import { getCompanyData } from "../services/companyServices";
-import { generateCardData, calculateBalance } from "../services/cardServices";
+import { generateCardData } from "../services/cardServices";
 import { generateEncryptedPassword } from "../services/encryptServices";
 import { Employee } from "../repositories/employeeRepository";
 import handleError from "../services/errorServices";
 
 export async function createCard(req: Request, res: Response) {
-    const apiKey: any = req.headers['x-api-key'];
     const employee: Employee = res.locals.employee;
     const { type } = req.body
 
     try {
-        await getCompanyData(apiKey);
         const card = await generateCardData(employee, type);
 
         await cardRepository.insert(card);
 
-        res.status(201).send("Card created successfully");
+        res.status(201).send("Card created successfully. Your security code is: " + card.securityCode);
     } catch (err: any) {
         const statusCode = handleError(err.code);
         if (statusCode !== 418)
@@ -45,30 +40,6 @@ export async function activateCard(req: Request, res: Response) {
         res.status(202).send("Card activated successfully");
     } catch (err) {
         res.status(500).send("On activateCard: " + err);
-    }
-}
-
-export async function getTransactions(req: Request, res: Response) {
-    const { id } = req.params;
-
-    try {
-        const transactions = await paymentRepository.findByCardId(Number(id));
-        const recharges = await rechargeRepository.findByCardId(Number(id));
-        const transactionsValues: number[] = [];
-        const rechargesValues: number[] = [];
-
-        transactions.map(t => transactionsValues.push(t.amount));
-        recharges.map(r => rechargesValues.push(r.amount));
-
-        const balance = calculateBalance(transactionsValues, rechargesValues);
-
-        res.status(200).send({
-            balance,
-            transactions,
-            recharges
-        });
-    } catch (err) {
-        res.status(500).send("On getTransactions: " + err);
     }
 }
 

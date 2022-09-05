@@ -12,16 +12,18 @@ export async function generateCardData(employee: Employee, type: cardRepository.
             throw "CardFound";
         }
 
+        const secCode = faker.random.numeric(3).toString();
+
         const cardName = generateCardName(employee.fullName);
         const cardNumber = faker.random.numeric(16);
-        const secCode = encryptSecCode(faker.random.numeric(3).toString());
+        const encryptedSecCode = encryptSecCode(secCode);
         const expDate = generateNewExpDate();
 
         const newCard = {
             employeeId: employee.id,
             number: cardNumber,
             cardholderName: cardName,
-            securityCode: secCode,
+            securityCode: encryptedSecCode,
             expirationDate: expDate,
             password: null,
             isVirtual: false,
@@ -30,7 +32,7 @@ export async function generateCardData(employee: Employee, type: cardRepository.
             type,
         }
 
-        return newCard;
+        return { ...newCard, securityCode: secCode};
     } catch (err) {
         if (err === "CardFound") {
             throw { code: "CardFound", message: `Error: card with type '${type}' already exists` }
@@ -40,16 +42,7 @@ export async function generateCardData(employee: Employee, type: cardRepository.
     }
 }
 
-export function calculateBalance(transactions: number[], recharges: number[]) {
-    let balance = 0;
-
-    recharges.map(r => balance += r)
-    transactions.map(t => balance -= t);
-
-    return balance;
-}
-
-export function generateCardDate(date: string) {
+export function formatCardDate(date: string) {
     const expDateMonth = date.slice(0, 2);
     const expDateYear = date.slice(3);
     const newDate = new Date(Number(`20${expDateYear}`), Number(expDateMonth) - 1);

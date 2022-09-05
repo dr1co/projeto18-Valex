@@ -6,8 +6,10 @@ export function generateEncryptedPassword(password: string) {
     return bcrypt.hashSync(password, 10);
 }
 
-export function compareCrypt(password: string, comparator: string) {
-    return bcrypt.compareSync(password, comparator);
+export function compareCrypt(password: string, comparator: string | undefined | null) {
+    if (comparator)
+        return bcrypt.compareSync(password, comparator);
+    return false;
 }
 
 export function encryptSecCode(secCode: string) {
