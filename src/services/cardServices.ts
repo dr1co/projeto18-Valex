@@ -40,6 +40,15 @@ export async function generateCardData(employee: Employee, type: cardRepository.
     }
 }
 
+export function calculateBalance(transactions: number[], recharges: number[]) {
+    let balance = 0;
+
+    recharges.map(r => balance += r)
+    transactions.map(t => balance -= t);
+
+    return balance;
+}
+
 function generateCardName(fullName: string) {
     const nameArray: string[] = fullName.toUpperCase().split(" ").filter(name => name.length >= 3);
 

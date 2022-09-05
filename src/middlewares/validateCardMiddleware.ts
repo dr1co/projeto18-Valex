@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import * as cardRepository from '../repositories/cardRepository';
 import { decryptSecCode } from "../services/encryptServices";
 
-export async function validateCard(req: Request, res: Response, next: NextFunction) {
+export async function validateCardActivation(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     const { securityCode } = req.body
 
@@ -35,6 +35,22 @@ export async function validateCard(req: Request, res: Response, next: NextFuncti
 
         next();
     } catch (err) {
-        res.status(500).send("On validateCard: " + err);
+        res.status(500).send("On validateCardActivation: " + err);
     }
+}
+
+export async function validateCard(req: Request, res: Response, next: NextFunction) {
+    const { id } = req.params;
+
+    try {
+        const card = await cardRepository.findById(Number(id));
+
+        if (!card) {
+            return res.status(404).send("Error: card not found");
+        }
+
+        next();
+    } catch (err) {
+        res.status(500).send("On validateCard: " + err);
+    } 
 }
