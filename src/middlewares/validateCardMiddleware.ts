@@ -55,6 +55,29 @@ export async function validateCardBlock(req: Request, res: Response, next: NextF
     }
 }
 
+export async function validateCardUnblock(req: Request, res: Response, next: NextFunction) {
+    const card: cardRepository.Card = res.locals.card;
+    const { password } = req.body;
+    const today = new Date();
+    const expDate = generateCardDate(card.expirationDate);
+
+    try {
+        if (!card.password || !card.isBlocked || today > expDate) {
+            return res.status(422).send("Error: card is not active or is already unblocked/expired");
+        }
+
+        const validate = compareCrypt(password, card.password);
+
+        if (!validate) {
+            return res.status(401).send("Error: password is incorrect");
+        }
+
+        next();
+    } catch (err) {
+        res.status(500).send("on validateCardUnblock: " + err);
+    }
+}
+
 export async function validateCard(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
 

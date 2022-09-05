@@ -72,7 +72,7 @@ export async function getTransactions(req: Request, res: Response) {
     }
 }
 
-export async function BlockCard(req: Request, res: Response) {
+export async function blockCard(req: Request, res: Response) {
     const { id } = req.params;
 
     try {
@@ -80,6 +80,18 @@ export async function BlockCard(req: Request, res: Response) {
 
         res.status(200).send("Card blocked successfully");
     } catch (err) {
-        res.status(500).send("on BlockCard: " + err);
+        res.status(500).send("On blockCard: " + err);
+    }
+}
+
+export async function unblockCard(req: Request, res: Response) {
+    const { id } = req.params;
+
+    try {
+        await cardRepository.update(Number(id), { isBlocked: false });
+
+        res.status(200).send("Card blocked successfully");
+    } catch (err) {
+        res.status(500).send("On unblockCard: " + err);
     }
 }
