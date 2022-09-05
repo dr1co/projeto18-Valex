@@ -71,3 +71,15 @@ export async function getTransactions(req: Request, res: Response) {
         res.status(500).send("On getTransactions: " + err);
     }
 }
+
+export async function BlockCard(req: Request, res: Response) {
+    const { id } = req.params;
+
+    try {
+        await cardRepository.update(Number(id), { isBlocked: true });
+
+        res.status(200).send("Card blocked successfully");
+    } catch (err) {
+        res.status(500).send("on BlockCard: " + err);
+    }
+}

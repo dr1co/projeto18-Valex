@@ -15,7 +15,7 @@ export async function generateCardData(employee: Employee, type: cardRepository.
         const cardName = generateCardName(employee.fullName);
         const cardNumber = faker.random.numeric(16);
         const secCode = encryptSecCode(faker.random.numeric(3).toString());
-        const expDate = generateExpDate();
+        const expDate = generateNewExpDate();
 
         const newCard = {
             employeeId: employee.id,
@@ -49,6 +49,13 @@ export function calculateBalance(transactions: number[], recharges: number[]) {
     return balance;
 }
 
+export function generateCardDate(date: string) {
+    const expDateMonth = date.slice(0, 2);
+    const expDateYear = date.slice(3);
+    const newDate = new Date(Number(`20${expDateYear}`), Number(expDateMonth) - 1);
+    return newDate;
+}
+
 function generateCardName(fullName: string) {
     const nameArray: string[] = fullName.toUpperCase().split(" ").filter(name => name.length >= 3);
 
@@ -60,7 +67,7 @@ function generateCardName(fullName: string) {
     return nameArray.join(" ");
 }
 
-function generateExpDate() {
+function generateNewExpDate() {
     const today = new Date()
     const month = today.getMonth();
     const year = (today.getFullYear() % 100) + 5

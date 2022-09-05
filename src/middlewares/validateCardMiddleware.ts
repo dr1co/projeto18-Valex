@@ -1,19 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 
 import * as cardRepository from '../repositories/cardRepository';
-import { decryptSecCode } from "../services/encryptServices";
+import { decryptSecCode, compareCrypt } from "../services/encryptServices";
+import { generateCardDate } from "../services/cardServices";
 
 export async function validateCardActivation(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
     const { securityCode } = req.body
+    const card: cardRepository.Card = res.locals.card
 
     try {
-        const card = await cardRepository.findById(Number(id));
-
-        if (!card) {
-            return res.status(404).send("Error: card not found");
-        }
-
         const decrypted = decryptSecCode(card.securityCode);
 
         if (decrypted !== securityCode) {
@@ -21,9 +16,7 @@ export async function validateCardActivation(req: Request, res: Response, next: 
         }
 
         const today = new Date();
-        const expDateMonth = card.expirationDate.slice(0, 2);
-        const expDateYear = card.expirationDate.slice(3);
-        const expDate = new Date(Number(`20${expDateYear}`), Number(expDateMonth) - 1);
+        const expDate = generateCardDate(card.expirationDate);
 
         if (today > expDate) {
             return res.status(401).send("Error: card expired");
@@ -39,6 +32,29 @@ export async function validateCardActivation(req: Request, res: Response, next: 
     }
 }
 
+export async function validateCardBlock(req: Request, res: Response, next: NextFunction) {
+    const card: cardRepository.Card = res.locals.card;
+    const { password } = req.body;
+    const today = new Date();
+    const expDate = generateCardDate(card.expirationDate);
+
+    try {
+        if (!card.password || card.isBlocked || today > expDate) {
+            return res.status(422).send("Error: card is not active or is already blocked/expired");
+        }
+
+        const validate = compareCrypt(password, card.password);
+
+        if (!validate) {
+            return res.status(401).send("Error: password is incorrect");
+        }
+
+        next();
+    } catch (err) {
+        res.status(500).send("on validateCardBlock: " + err);
+    }
+}
+
 export async function validateCard(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
 
@@ -48,6 +64,8 @@ export async function validateCard(req: Request, res: Response, next: NextFuncti
         if (!card) {
             return res.status(404).send("Error: card not found");
         }
+
+        res.locals.card = card;
 
         next();
     } catch (err) {
